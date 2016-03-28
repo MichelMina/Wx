@@ -1,13 +1,13 @@
 import wx
 import sys
 import schedulers
-
-
 def Wiki_Question_Handler(Answer):
 	if Answer == wx.ID_NO:
 		AA=wx.MessageDialog(None,"Please click help from the menu bar then choose Wiki\nTo understand how to use the program",'Wiki',wx.OK)
 		A=AA.ShowModal()
 		AA.Destroy()
+
+
 
 class Sched(wx.Frame):
 
@@ -35,9 +35,14 @@ class Sched(wx.Frame):
 		select.Destroy()
 
 		#Main Frame
-		wx.Frame.__init__(self,parent,id,Scheduler_Mode_Answer+" Scheduler",size=(500,100))
+		image = 'roses.jpg'
+		bmp1 = wx.Image(image, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+		wx.Frame.__init__(self,parent,id,Scheduler_Mode_Answer+" Scheduler",size=(bmp1.GetWidth(),bmp1.GetHeight()))
 		panel=wx.Panel(self)
 		panel.SetBackgroundColour('green')
+		self.bitmap1 = wx.StaticBitmap(self, -1, bmp1, (0, 0))
+		panel = self.bitmap1
+
 
 		#Arrival Time things
 		Arrival_Time_Static=wx.StaticText(panel,-1,'Arrival time',pos=(10,10),size=(-1,-1),style=0)
