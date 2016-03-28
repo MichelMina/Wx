@@ -63,7 +63,7 @@ class Sched(wx.Frame):
 		if Scheduler_Mode_Answer == 'Round Robin':
 			Slice_Static= wx.StaticText(panel,-1,'Time Slice',pos=(10,50),size=(-1,-1),style=0)
 			Time_Slice_Spinner=wx.SpinCtrl(panel, -1, "", (75,48), (100,20))
-			Time_Slice_Spinner.Value='1'
+			Time_Slice_Spinner.Value='50'
 
 		#Add process button
 		Add_Process=wx.Button(panel,label="Add process",pos=(200,15),size=(-1,-1))
@@ -86,14 +86,14 @@ class Sched(wx.Frame):
 
 	#Normal Schedulers
 	def Add_Process_EVT(self,event,Burst,Arrival):
-		self.total_time=self.total_time+(int)(Burst.GetValue())
-		self.Process.append(((int)(Arrival.GetValue()),(int)(Burst.GetValue())))
+		self.Process.append((self.count,float(Arrival.GetValue()),float(Burst.GetValue())))
 		Burst.Value='0'
 		Arrival.Value='0'
+		self.count+=1
 
 	#Priority Schedulers
 	def Add_Process_EVT_P(self,event,Burst,Arrival,Priority):
-		self.Process.append(((int)(Arrival.GetValue()),(int)(Burst.GetValue()),(int)(Priority.GetValue())))
+		self.Process.append((self.count,float(Arrival.GetValue()),float(Burst.GetValue()),int(Priority.GetValue())))
 		self.count +=1
 		Burst.Value='0'
 		Arrival.Value='0'
@@ -101,7 +101,7 @@ class Sched(wx.Frame):
 
 	#Round Robin Schedulers
 	def Add_Process_EVT_T(self,event,Burst,Arrival,Time_Slice_Spinner,Panel):
-		self.Process.append(((int)(Arrival.GetValue()),(int)(Burst.GetValue())))
+		self.Process.append((self.count,float(Arrival.GetValue()),float(Burst.GetValue())))
 		self.count +=1
 		Burst.Value='0'
 		Arrival.Value='0'
@@ -112,27 +112,25 @@ class Sched(wx.Frame):
 		Time_Slice_Spinner.Hide()
 
 	def Finish_EVT(self,event,Scheduler_Type):
-		Tester=wx.MessageDialog(None,"Total times=" + (str)(self.total_time),'Title',wx.OK)
-		Tester1 = Tester.ShowModal()
+		print (self.Process)
 		if Scheduler_Type == 'FCFS':
 			schedulers.fcfs(self.Process)
-		'''elif Scheduler_Type == 'SJF Preemptive':
-			schedulers.sjf_preemptive(self.Process)'''
-		if Scheduler_Type == 'SJF non-Preemptive':
+		elif Scheduler_Type == 'SJF Preemptive':
+			schedulers.sjf_preemptive(self.Process)
+		elif Scheduler_Type == 'SJF non-Preemptive':
 			schedulers.sjf_non_preemptive(self.Process)
-		'''elif Scheduler_Type == 'Priority Preemptive':
-			schedulers.priority_preemptive(self.Process)'''
-		if Scheduler_Type == 'Priority non-Preemptive':
+		elif Scheduler_Type == 'Priority Preemptive':
+			schedulers.priority_preemptive(self.Process)
+		elif Scheduler_Type == 'Priority non-Preemptive':
 			schedulers.priority_non_preemptive(self.Process)
-
-		if Scheduler_Type == 'Round Robin':
+		elif Scheduler_Type == 'Round Robin':
 			schedulers.round_robin_non_preemptive(self.Process, self.Time_Slice)
-		if Tester1==wx.ID_OK:
-			sys.exit()
+
+		sys.exit()
 
 if __name__=='__main__' :
-	app=wx.PySimpleApp()
+	app=wx.PySimpleApp(0)
 	frame=Sched(parent=None,id=-1)
-	frame.Show()
+	frame.Show(True)
 	app.MainLoop()
 	
