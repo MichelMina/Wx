@@ -234,7 +234,7 @@ def priority_non_preemptive(processes):
     return tuple((get_avg(avg_waiting), get_avg(avg_turnaround)))
 
 
-def round_robin_non_preemptive(processes, time_slice):
+def round_robin_non_preemptive(processes, time_slice,w,h):
     """
     :param processes: list of tuples(ID, arrival time, burst time)
     :param time_slice: Time slice used in scheduling : float
@@ -250,7 +250,7 @@ def round_robin_non_preemptive(processes, time_slice):
     # Index to be used later
     Standing_index = 0
     Total_waiting = 0
-
+    Bub=0
     # Sort input according to arrival time
     processes.sort(key=lambda tup: tup[1])
 
@@ -265,9 +265,9 @@ def round_robin_non_preemptive(processes, time_slice):
             Ex_Queue.put(proc_table[count])
             Standing_index += 1  # increment standing index (next to be checked if arrived)
 
-    gc = GanttChart('Test Chart', width=800, height=200, progress=(2011, 02, 27))
+    gc = GanttChart('Test Chart', width=800, height=275, progress=(2011, 02, 27))
     on_time = GanttCategory('On Time', '0c0')
-    late = GanttCategory('Late', 'c00')
+    late = GanttCategory('Late', 'ffffff')
 
     t1 = gc.add_task('Late Task', (2016, 1, 1), duration=0, category=late)
 
@@ -292,8 +292,10 @@ def round_robin_non_preemptive(processes, time_slice):
                 dummy[Last_Arr] = time + time_slice
                 # pushing it to the queue
                 Ex_Queue.put(dummy)
+                if Bub:
+                    t1 = gc.add_task('Bubble', depends_on=t1, duration=Bub, category=late)
+                    Bub=0
                 t1 = gc.add_task('P' + str(dummy[ID]), depends_on=t1, duration=time_slice, category=on_time)
-
                 time += time_slice
                 print("executing P%d at time %d" % (dummy[ID], time - time_slice))
             elif 0 < dummy[Burst] <= time_slice:
@@ -302,9 +304,13 @@ def round_robin_non_preemptive(processes, time_slice):
                 # finish the job incrementing the time
                 time += dummy[Burst]
                 print("ending P%d at time %d" % (dummy[ID], time - dummy[Burst]))
+                if Bub:
+                    t1 = gc.add_task('Bubble', depends_on=t1, duration=Bub, category=late)
+                    Bub=0
                 t1 = gc.add_task('P' + str(dummy[ID]), depends_on=t1, duration=dummy[Burst], category=on_time)
         else:
             print("bubble at time = %d" % time)
+            Bub+=1
             time += 1
     image = gc.get_image('out.png')
     print ("Average waiting time = %f" % (Total_waiting / len(processes)))

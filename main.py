@@ -38,19 +38,25 @@ class Sched(wx.Frame):
         select.Destroy()
 
         # Main Frame
-        image = 'roses.jpg'
+        image = 'roses.png'
         self.bmp1 = wx.Image(image, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.Width = self.bmp1.GetWidth()
         self.Hight = self.bmp1.GetHeight()
-        wx.Frame.__init__(self, parent, id, Scheduler_Mode_Answer + " Scheduler", size=(self.Width, self.Hight))
+        wx.Frame.__init__(self, parent, id, Scheduler_Mode_Answer + " Scheduler", size=(self.Width, self.Hight),style=wx.DEFAULT_FRAME_STYLE^wx.RESIZE_BORDER^wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
+        wx.Frame.BackgroundColour="black"
         panel.SetBackgroundColour('green')
         self.bitmap1 = wx.StaticBitmap(self, -1, self.bmp1, (0, 0))
         panel = self.bitmap1
 
-
-
+        #OS scheduler edited text
+        #OS='0.png'
+        #OS_im=wx.Image(OS,wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        #wx.StaticBitmap(self,-1,OS_im,(5,5))
         # Arrival Time things
+        #Arr_lo='1.png'
+        #Arr_im=wx.Image(Arr_lo,wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        #wx.StaticBitmap(self,-1,Arr_im,(5,150))
         Arrival_Time_Static = wx.StaticText(panel, -1, 'Arrival time', pos=(10, 10), size=(-1, -1), style=0)
         Arrival_Time_Static.SetForegroundColour('white')
         Arrival_Time_Text = wx.TextCtrl(panel, pos=(75, 8), size=(100, 20))
@@ -139,11 +145,11 @@ class Sched(wx.Frame):
         elif Scheduler_Type == 'Priority non-Preemptive':
             schedulers.priority_non_preemptive(self.Process)
         elif Scheduler_Type == 'Round Robin':
-            im = schedulers.round_robin_non_preemptive(self.Process, self.Time_Slice)
+            im = schedulers.round_robin_non_preemptive(self.Process, self.Time_Slice,self.Width,self.Hight)
 
         image1 = "out.png"
         bmp1 = wx.Image(image1, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.bitmap21 = wx.StaticBitmap(self, -1, bmp1, (0, 0))
+        self.bitmap21 = wx.StaticBitmap(self, -1, bmp1, (0, (self.Hight/2)-10))
 
         # sys.exit()
 
