@@ -21,3 +21,7 @@ if __name__=='__main__' :
     ]
     schedulers.priority_non_preemptive(p_priority_non)
     schedulers.reset()
+    p_sjf_pre = [
+        (1, 0, 7), (2, 2, 4), (3, 4, 1), (4, 5, 4)
+    ]
+    schedulers.sjf_preemptive(p_sjf_pre)
