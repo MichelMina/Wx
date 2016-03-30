@@ -1,15 +1,32 @@
 import wx
 import sys
 import schedulers
-
+import pygame
 
 def Wiki_Question_Handler(Answer):
     if Answer == wx.ID_NO:
-        AA = wx.MessageDialog(None,
-                              "Please click help from the menu bar then choose Wiki\nTo understand how to use the program",
-                              'Wiki', wx.OK)
-        A = AA.ShowModal()
-        AA.Destroy()
+        FPS = 60
+        pygame.init()
+        clock = pygame.time.Clock()
+        pygame.mixer.quit()
+        movie = pygame.movie.Movie('test.mpg')
+        screen = pygame.display.set_mode(movie.get_size())
+        movie_screen = pygame.Surface(movie.get_size()).convert()
+        movie.set_display(movie_screen)
+        movie.play()
+        playing = True
+        while playing:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    movie.stop()
+                    playing = False
+
+            screen.blit(movie_screen,(0,0))
+            pygame.display.update()
+            clock.tick(FPS)
+
+    pygame.quit()
+
 
 
 class Sched(wx.Frame):
@@ -42,50 +59,65 @@ class Sched(wx.Frame):
         self.bmp1 = wx.Image(image, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.Width = self.bmp1.GetWidth()
         self.Hight = self.bmp1.GetHeight()
-        wx.Frame.__init__(self, parent, id, Scheduler_Mode_Answer + " Scheduler", size=(self.Width, self.Hight),style=wx.DEFAULT_FRAME_STYLE^wx.RESIZE_BORDER^wx.MAXIMIZE_BOX)
+        wx.Frame.__init__(self, parent, id, Scheduler_Mode_Answer + " Scheduler", size=(self.Width, self.Hight),
+                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER ^ wx.MAXIMIZE_BOX)
         panel = wx.Panel(self)
-        wx.Frame.BackgroundColour="black"
+        wx.Frame.BackgroundColour = "black"
         panel.SetBackgroundColour('green')
         self.bitmap1 = wx.StaticBitmap(self, -1, self.bmp1, (0, 0))
         panel = self.bitmap1
 
-        #OS scheduler edited text
-        #OS='0.png'
-        #OS_im=wx.Image(OS,wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        #wx.StaticBitmap(self,-1,OS_im,(5,5))
-        # Arrival Time things
-        #Arr_lo='1.png'
-        #Arr_im=wx.Image(Arr_lo,wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        #wx.StaticBitmap(self,-1,Arr_im,(5,150))
-        Arrival_Time_Static = wx.StaticText(panel, -1, 'Arrival time', pos=(10, 10), size=(-1, -1), style=0)
-        Arrival_Time_Static.SetForegroundColour('white')
-        Arrival_Time_Text = wx.TextCtrl(panel, pos=(75, 8), size=(100, 20))
-        Arrival_Time_Text.Value = '0'
-        Arrival_Time_Text.SetBackgroundColour('TAN')
+        # OS scheduler edited text
+        OS = '0.png'
+        OS_im = wx.Image(OS, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, OS_im, (0, 0))
 
-        # Burst Time things
-        Burst_Time_Static = wx.StaticText(panel, -1, 'Burst time', pos=(10, 30), size=(-1, -1), style=0)
-        Burst_Time_Static.SetForegroundColour('white')
-        Burst_Time_Text = wx.TextCtrl(panel, pos=(75, 28), size=(100, 20))
+        """ Arrival time objects """
+        # Arrival Time static text
+        wx.StaticBitmap(self, -1, wx.Image('1.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap(), (0, 120))
+        # Arrival Time text
+        Arrival_Time_Text = wx.TextCtrl(panel, pos=(250, 137), size=(100, 32),style=wx.BORDER_NONE)
+        # Changing arrival time font
+        Arrival_Time_Text.SetFont(
+            wx.Font(20, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
+        # Setting default Value
+        Arrival_Time_Text.Value = '0'
+        # Arrival_Time_Static = wx.StaticText(panel, -1, 'Arrival time', pos=(10, 10), size=(-1, -1), style=0)
+
+        """ Burst Time objs """
+        # Burst time static text
+        wx.StaticBitmap(self, -1, wx.Image('2.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap(), (5, 188))
+        # Burst time Text
+        Burst_Time_Text = wx.TextCtrl(panel, pos=(250, 187), size=(100, 32),style=wx.BORDER_NONE)
         Burst_Time_Text.Value = '0'
-        Burst_Time_Text.SetBackgroundColour('THISTLE')
+        # Changing font
+        Burst_Time_Text.SetFont(
+            wx.Font(20, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
+        # Burst_Time_Static = wx.StaticText(panel, -1, 'Burst time', pos=(10, 30), size=(-1, -1), style=0)
 
         # Case that takes priority
         if Scheduler_Mode_Answer == 'Priority preepmtive' or Scheduler_Mode_Answer == 'Priority non-Preemptive':
-            Priority_Static = wx.StaticText(panel, -1, 'Priority', pos=(10, 50), size=(-1, -1), style=0)
-            Priority_Text = wx.TextCtrl(panel, pos=(75, 48), size=(100, 20))
+            # Priority time image
+            wx.StaticBitmap(self, -1, wx.Image('3.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap(), (5, 240))
+            # Priority text control
+            Priority_Text = wx.TextCtrl(panel, pos=(250, 237), size=(100, 32),style=wx.BORDER_NONE)
+            # Change font
+            Priority_Text.SetFont(
+                wx.Font(20, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
             Priority_Text.Value = '100'
 
         # Case Round robin
         if Scheduler_Mode_Answer == 'Round Robin':
-            Slice_Static = wx.StaticText(panel, -1, 'Time Slice', pos=(10, 50), size=(-1, -1), style=0)
-            Time_Slice_Spinner = wx.SpinCtrl(panel, -1, "", (75, 48), (100, 20))
+            wx.StaticBitmap(self, -1, wx.Image('4.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap(), (5, 240))
+            Time_Slice_Spinner = wx.SpinCtrl(panel, -1, "", (230, 247), (100, 32))
+            # Change font
+            Time_Slice_Spinner.SetFont(
+                wx.Font(20, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
             Time_Slice_Spinner.SetValue(50)
 
+        """ ADD Button """
         # Add process button
-        Add_Process = wx.Button(panel, label="Add process", pos=(200, 15), size=(-1, -1))
-        Add_Process.SetBackgroundColour('MAROON')
-
+        Add_Process = wx.BitmapButton(panel, -1, wx.Image("Add.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap(), pos=(380, 135), style=wx.BORDER_NONE)
         # Add button action event handlers
         if Scheduler_Mode_Answer == 'FCFS' or Scheduler_Mode_Answer == 'SJF preepmtive' or Scheduler_Mode_Answer == 'SJF non-Preemptive':
             self.Bind(wx.EVT_BUTTON, lambda event: self.Add_Process_EVT(event, Burst_Time_Text, Arrival_Time_Text),
@@ -99,12 +131,15 @@ class Sched(wx.Frame):
         elif Scheduler_Mode_Answer == 'Round Robin':
             self.Bind(wx.EVT_BUTTON, lambda event: self.Add_Process_EVT_T(event, Burst_Time_Text, Arrival_Time_Text,
                                                                           Time_Slice_Spinner, panel), Add_Process)
-
+        """Finish Button"""
         # Finish process addition button
-        Finish = wx.Button(panel, label="Done", pos=(300, 15), size=(-1, -1))
-        self.Bind(wx.EVT_BUTTON, lambda event: self.Finish_EVT(event, Scheduler_Mode_Answer), Finish)
-        Finish.SetBackgroundColour('PLUM')
+        self.Finish = wx.BitmapButton(panel, -1, wx.Image("Schedule.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap(), pos=(480, 125), style=wx.BORDER_NONE)
+        self.Bind(wx.EVT_BUTTON, lambda event: self.Finish_EVT(event, Scheduler_Mode_Answer), self.Finish)
 
+        """HELP ME! button """
+        HELP = wx.BitmapButton(panel, -1, wx.Image("help.jpg", wx.BITMAP_TYPE_ANY).ConvertToBitmap(), pos=(1200, 5), style=wx.BORDER_NONE)
+        self.Bind(wx.EVT_BUTTON, lambda event:self.Play_Video(event), HELP)
+        self.Panel1=panel
     # Normal Schedulers
     def Add_Process_EVT(self, event, Burst, Arrival):
         self.Process.append((self.count, float(Arrival.GetValue()), float(Burst.GetValue())))
@@ -129,11 +164,14 @@ class Sched(wx.Frame):
         # wx.StaticText()
         if Time_Slice_Spinner:
             self.Time_Slice = Time_Slice_Spinner.GetValue()
-        Priority_Static = wx.StaticText(Panel, -1, ' = ' + (str)(self.Time_Slice), pos=(75, 50), size=(-1, -1), style=0)
+        Quantum = wx.StaticText(Panel, -1, ' = ' + (str)(self.Time_Slice), pos=(230, 245), size=(-1, -1), style=wx.BORDER_NONE)
+        Quantum.SetFont(
+                wx.Font(20, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
+        Quantum.SetBackgroundColour("white")
         Time_Slice_Spinner.Hide()
 
     def Finish_EVT(self, event, Scheduler_Type):
-        print (self.Process)
+        self.Finish.Destroy()
         if Scheduler_Type == 'FCFS':
             schedulers.fcfs(self.Process)
         elif Scheduler_Type == 'SJF Preemptive':
@@ -145,14 +183,20 @@ class Sched(wx.Frame):
         elif Scheduler_Type == 'Priority non-Preemptive':
             schedulers.priority_non_preemptive(self.Process)
         elif Scheduler_Type == 'Round Robin':
-            im = schedulers.round_robin_non_preemptive(self.Process, self.Time_Slice,self.Width,self.Hight)
+            Av = schedulers.round_robin_non_preemptive(self.Process, self.Time_Slice, self.Width, self.Hight)
 
         image1 = "out.png"
         bmp1 = wx.Image(image1, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.bitmap21 = wx.StaticBitmap(self, -1, bmp1, (0, (self.Hight/2)-10))
+        self.bitmap21 = wx.StaticBitmap(self, -1, bmp1, (0, (self.Hight / 2) - 10))
 
-        # sys.exit()
+        Average_Waiting = wx.StaticText(self.Panel1, -1, 'Average Waiting = %.2f' % Av, pos=(800, 500), size=(-1, -1), style=wx.BORDER_NONE)
+        Average_Waiting.SetFont(
+                wx.Font(10, wx.FONTFAMILY_SCRIPT, wx.FONTSTYLE_ITALIC, wx.BOLD, False, u'Viner Hand ITC'))
+        Average_Waiting.SetBackgroundColour("white")
 
+
+    def Play_Video(self,event):
+        Wiki_Question_Handler(wx.ID_NO)
 
 if __name__ == '__main__':
     app = wx.App(0)
