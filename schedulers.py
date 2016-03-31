@@ -1,6 +1,3 @@
-import datetime
-# import gantt
-from time import localtime, mktime
 from collections import OrderedDict
 import Queue as queue
 from googlegantt import GanttChart, GanttCategory
@@ -74,9 +71,6 @@ def fcfs(processes):
     # Turnaround Time = Departure Time - Arrival Time
     # Waiting Time = Service Time - Arrival Time
 
-    # Sort according to arrival time
-
-
     # Sort input according to arrival time
     processes.sort(key=lambda tup: tup[1])
 
@@ -101,9 +95,6 @@ def fcfs(processes):
     # Check for blanks (Idle time)
     # List, indices of arrival time, burst time, service time
 
-
-
-
     remove_blanks(proc_table, 1, 2, 3)
 
     for table in proc_table:
@@ -112,14 +103,8 @@ def fcfs(processes):
         else:
             t1 = gc.add_task('P%d' % table[0], depends_on=t1, duration=table[2], category=on_time)
 
-    print processes
-    print proc_table
-    print gantt_chart
-    print "Average Waiting Time:    " + str(get_avg(avg_waiting))
-    print "Average Turnaround Time: " + str(get_avg(avg_turnaround))
     image = gc.get_image('out.png')
     return get_avg(avg_waiting)
-
 
 def sjf_non_preemptive(processes):
     """
@@ -129,13 +114,17 @@ def sjf_non_preemptive(processes):
     global time
 
 
-    # print processes
     # Waiting Time = Service Time - Arrival Time
     # Sort input according to arrival time and burst time
     processes.sort(key=lambda tup: tup[2])
     processes.sort(key=lambda tup: tup[1])
-    # print processes
 
+
+    gc = GanttChart('Schedule Gantt chart', width=800, height=275, progress=(2011, 02, 27))
+    on_time = GanttCategory('Executing', '0c0')
+    late = GanttCategory('Bubble', 'ffffff')
+
+    t1 = gc.add_task('Tasks', (2016, 1, 1), duration=processes[0][1], category=late)
     # Calculate total time of execution
     # Total Time = SUM(Burst Time) + Arrival Time of First Process
     total_time = processes[0][1]
@@ -196,80 +185,6 @@ def sjf_non_preemptive(processes):
     print "AVG Waiting Time:    " + str(get_avg(avg_waiting))
     print "AVG Turnaround Time: " + str(get_avg(avg_turnaround))
     return get_avg(avg_waiting)
-
-
-def sjf_preemptive(processes):
-    """
-    :param processes: list of tuples(ID, arrival time, burst time)
-    :return: tuple(AVG Waiting time, AVG Turnaround Time)
-    """
-    global time
-    # print processes
-    # Waiting Time = Service Time - Arrival Time
-    # Sort input according to arrival time and burst time
-    processes.sort(key=lambda tup: tup[2])
-    processes.sort(key=lambda tup: tup[1])
-    # print processes
-
-    # Calculate total time of execution
-    # Total Time = SUM(Burst Time) + Arrival Time of First Process
-    total_time = processes[0][1]
-    for process in processes:
-        total_time += process[2]
-
-    print "total time: " + str(total_time)
-    # Proceed to first process
-    time += processes[0][1]
-    ready_queue = []
-
-    while time < total_time:
-        # Group all processes where arrival time < current time
-        for process in processes:
-            if process[1] <= time:
-                ready_queue.append(process)
-
-        # Sort ready queue by shortest time
-        ready_queue.sort(key=lambda tup: tup[2])
-
-        PID = ready_queue[0][0]
-        ARTIME = ready_queue[0][1]
-        print "Ready Queue: "
-        print ready_queue
-        BURTIME = (ready_queue[1][2] - ready_queue[0][1])
-        SERVTIME = time
-        WAITTIME = (SERVTIME - ARTIME)
-        TUTTIME = SERVTIME + BURTIME - ARTIME
-
-        if BURTIME > ready_queue[0][2]:
-            BURTIME = ready_queue[0][2]
-
-        gantt_chart['P' + str(ready_queue[0][0])] = SERVTIME
-        proc_table.append([
-            PID, ARTIME, BURTIME, SERVTIME, WAITTIME, TUTTIME
-        ])
-
-        # Decrement burst time
-        processes[processes.index(list(ready_queue[0]))][2] -= BURTIME
-        if processes[processes.index(list(ready_queue[0]))][2] <= 0:
-            processes.remove(processes.index(list(ready_queue[0])))
-        # processes[processes.index(list(ready_queue[0]))][2] -= (ready_queue[1][2] - ready_queue[0][1])
-        ready_queue = []
-
-    # Calculate Average and Turnaround Time
-    for process in proc_table:
-        avg_waiting.append(process[3] - process[1])
-        avg_turnaround.append(process[3] + process[2] - process[1])
-
-    # Check for blanks (Idle time)
-    remove_blanks(proc_table, 1, 2, 3)
-
-    print proc_table
-    # print avg_waiting
-    # print avg_turnaround
-    print "AVG Waiting Time:    " + str(get_avg(avg_waiting))
-    print "AVG Turnaround Time: " + str(get_avg(avg_turnaround))
-    return tuple((get_avg(avg_waiting), get_avg(avg_turnaround)))
-
 
 def priority_non_preemptive(processes):
     """
@@ -349,7 +264,6 @@ def priority_non_preemptive(processes):
     image = gc.get_image('out.png')
     return get_avg(avg_waiting)
 
-
 def round_robin_non_preemptive(processes, time_slice):
     """
     :param processes: list of tuples(ID, arrival time, burst time)
@@ -367,10 +281,12 @@ def round_robin_non_preemptive(processes, time_slice):
     Standing_index = 0
     Total_waiting = 0
     Bub = 0
+
     # Sort input according to arrival time
     processes.sort(key=lambda tup: tup[1])
 
     Ex_Queue = queue.Queue(len(processes))
+
     count = -1
     for process in processes:
         count += 1
@@ -381,12 +297,13 @@ def round_robin_non_preemptive(processes, time_slice):
             Ex_Queue.put(proc_table[count])
             Standing_index += 1  # increment standing index (next to be checked if arrived)
 
+    #Creating gantt chart
     gc = GanttChart('Schedule Gantt chart', width=800, height=275, progress=(2011, 02, 27))
     on_time = GanttCategory('Executing', '0c0')
     late = GanttCategory('Bubble', 'ffffff')
-
     t1 = gc.add_task('Tasks', (2016, 1, 1), duration=0, category=late)
 
+    #Main executing loop
     while Standing_index < len(processes) or Ex_Queue._qsize():
 
         # if the arrival time of process <= time .. put it into ready
@@ -396,6 +313,7 @@ def round_robin_non_preemptive(processes, time_slice):
                 Ex_Queue._put(dummy)
                 Standing_index += 1
 
+        #if the loop is not empty
         if Ex_Queue._qsize() > 0:
 
             dummy = Ex_Queue._get()
@@ -413,7 +331,7 @@ def round_robin_non_preemptive(processes, time_slice):
                     Bub = 0
                 t1 = gc.add_task('P' + str(dummy[ID]), depends_on=t1, duration=time_slice, category=on_time)
                 time += time_slice
-                print("executing P%d at time %d" % (dummy[ID], time - time_slice))
+
             elif 0 < dummy[Burst] <= time_slice:
                 # Update total waiting time
                 Total_waiting += (dummy[3] + (time - (dummy[4])))
@@ -425,9 +343,235 @@ def round_robin_non_preemptive(processes, time_slice):
                     Bub = 0
                 t1 = gc.add_task('P' + str(dummy[ID]), depends_on=t1, duration=dummy[Burst], category=on_time)
         else:
-            print("bubble at time = %d" % time)
             Bub += 1
             time += 1
     image = gc.get_image('out.png')
-    print ("Average waiting time = %f" % (Total_waiting / len(processes)))
     return (Total_waiting / len(processes))
+
+
+
+def sjf_preemptive(processes):
+    """
+    :param processes: list of tuples(ID, arrival time, burst time)
+    :return: tuple(AVG Waiting time, AVG Turnaround Time)
+    """
+    global time
+    # print processes
+    # Waiting Time = Service Time - Arrival Time
+    # Sort input according to arrival time and burst time
+    processes.sort(key=lambda tup: tup[2])
+    processes.sort(key=lambda tup: tup[1])
+    # print processes
+    #Creating gantt chart
+    gc = GanttChart('Schedule Gantt chart', width=800, height=275, progress=(2011, 02, 27))
+    on_time = GanttCategory('Executing', '0c0')
+    late = GanttCategory('Bubble', 'ffffff')
+    t1 = gc.add_task('Tasks', (2016, 1, 1), duration=0, category=late)
+    # Calculate total time of execution
+    # Total Time = SUM(Burst Time) + Arrival Time of First Process
+    total_time = processes[0][1]
+    for process in processes:
+        total_time += process[2]
+
+    print "total time: " + str(total_time)
+    # Proceed to first process
+    time += processes[0][1]
+    ready_queue = []
+    old_process = None
+    while time < total_time:
+        # Group all processes where arrival time < current time
+        # ready_queue contains all processes that have already arrived by now
+        for process in processes:
+            if process[1] <= time:
+                ready_queue.append(process)
+
+        # Sort ready queue by shortest time
+        ready_queue.sort(key=lambda tup: tup[2])
+
+        PID = ready_queue[0][0]
+        ARTIME = ready_queue[0][1]
+
+        BURTIME = 0.1
+        SERVTIME = time
+
+        gantt_chart['P' + str(ready_queue[0][0])] = SERVTIME
+        if ready_queue[0] is old_process:
+            element = proc_table[len(proc_table) - 1]
+            proc_table[len(proc_table) - 1] = [
+                PID, ARTIME, element[2] + BURTIME, element[3]
+            ]
+        else:
+            proc_table.append([
+                PID, ARTIME, BURTIME, SERVTIME
+            ])
+
+        # Decrement Burst Time
+        temp = (ready_queue[0][0], ready_queue[0][1], ready_queue[0][2] - BURTIME)
+        processes[processes.index(ready_queue[0])] = temp
+        ready_queue[0] = temp
+        if ready_queue[0][2] <= 0:
+            processes.remove(ready_queue[0])
+
+        time += BURTIME
+        old_process = ready_queue[0]
+        ready_queue = []
+
+    print proc_table
+    # Calculate Average and Turnaround Time
+    ids = []
+    served_ids = []
+    for i in range(len(proc_table)):
+        served_ids.append([proc_table[i][0], i])
+        ids.append(proc_table[i][0])
+
+    for i in range(len(proc_table)):
+        # one time instance
+        waiting_time = 0
+        if ids.count(proc_table[i][0]) == 1:
+            waiting_time = proc_table[i][3] - proc_table[i][1]
+            avg_waiting.append(waiting_time)
+
+        # Multi-instance
+        if ids.count(proc_table[i][0]) > 1:
+            served_ids.reverse()
+            served_ids.sort(key=lambda lst: lst[0])
+            for j in range(ids.count(proc_table[i][0])):
+                try:
+                    dummy = served_ids[j]
+                    dummy2 = served_ids[j + 1]
+                except IndexError:
+                    continue
+                if dummy[0] == proc_table[i][0]:
+                    if proc_table[served_ids[j][1]][3] - proc_table[served_ids[j + 1][1]][2] > 0:
+                        waiting_time += proc_table[served_ids[j][1]][3] - proc_table[served_ids[j + 1][1]][2]
+                        served_ids.remove(served_ids[j])
+                        served_ids.remove(served_ids[j + 1])
+            if waiting_time > 0:
+                avg_waiting.append(waiting_time)
+                waiting_time = 0
+
+    # print avg_waiting
+    # print avg_turnaround
+    print "AVG Waiting Time:    " + str(get_avg(avg_waiting))
+    for table in proc_table:
+        if table[0] == -1:
+            t1 = gc.add_task('Bubble', depends_on=t1, duration=table[2], category=late)
+        else:
+            t1 = gc.add_task('P%d' % table[0], depends_on=t1, duration=table[2], category=on_time)
+
+    image = gc.get_image('out.png')
+    return get_avg(avg_waiting)
+
+def priority_preemptive(processes):
+    """
+    :param processes: list of tuples(ID, arrival time, burst time, priority)
+    :return: tuple(AVG Waiting time, AVG Turnaround Time)
+    """
+    global time
+    # print processes
+    # Waiting Time = Service Time - Arrival Time
+    # Sort input according to arrival time and burst time
+    processes.sort(key=lambda tup: tup[3])
+    processes.sort(key=lambda tup: tup[1])
+    # print processes
+    #Creating gantt chart
+    gc = GanttChart('Schedule Gantt chart', width=800, height=275, progress=(2011, 02, 27))
+    on_time = GanttCategory('Executing', '0c0')
+    late = GanttCategory('Bubble', 'ffffff')
+    t1 = gc.add_task('Tasks', (2016, 1, 1), duration=0, category=late)
+    # Calculate total time of execution
+    # Total Time = SUM(Burst Time) + Arrival Time of First Process
+    total_time = processes[0][1]
+    for process in processes:
+        total_time += process[2]
+
+    print "total time: " + str(total_time)
+    # Proceed to first process
+    time += processes[0][1]
+    ready_queue = []
+    old_process = None
+    while time < total_time:
+        # Group all processes where arrival time < current time
+        # ready_queue contains all processes that have already arrived by now
+        for process in processes:
+            if process[1] <= time:
+                ready_queue.append(process)
+
+        # Sort ready queue by shortest time
+        ready_queue.sort(key=lambda tup: tup[3])
+
+        PID = ready_queue[0][0]
+        ARTIME = ready_queue[0][1]
+
+        BURTIME = 0.1
+        SERVTIME = time
+
+        gantt_chart['P' + str(ready_queue[0][0])] = SERVTIME
+        if ready_queue[0] is old_process:
+            element = proc_table[len(proc_table) - 1]
+            proc_table[len(proc_table) - 1] = [
+                PID, ARTIME, element[2] + BURTIME, element[3], element[4]
+            ]
+        else:
+            proc_table.append([
+                PID, ARTIME, BURTIME, ready_queue[0][3], SERVTIME
+            ])
+
+        # Decrement Burst Time
+        temp = (ready_queue[0][0], ready_queue[0][1], ready_queue[0][2] - BURTIME, ready_queue[0][3])
+        processes[processes.index(ready_queue[0])] = temp
+        ready_queue[0] = temp
+        if ready_queue[0][2] <= 0:
+            processes.remove(ready_queue[0])
+
+        time += BURTIME
+        old_process = ready_queue[0]
+        ready_queue = []
+
+    # Check for blanks (Idle time)
+    # remove_blanks(proc_table, 1, 2, 4)
+
+    print proc_table
+    # Calculate Average and Turnaround Time
+    ids = []
+    served_ids = []
+    for i in range(len(proc_table)):
+        served_ids.append([proc_table[i][0], i])
+        ids.append(proc_table[i][0])
+
+    for i in range(len(proc_table)):
+        # one time instance
+        waiting_time = 0
+        if ids.count(proc_table[i][0]) == 1:
+            waiting_time = proc_table[i][4] - proc_table[i][1]
+            avg_waiting.append(waiting_time)
+
+        # Multi-instance
+        if ids.count(proc_table[i][0]) > 1:
+            served_ids.reverse()
+            served_ids.sort(key=lambda lst: lst[0])
+            for j in range(len(served_ids)):
+                try:
+                    dummy = served_ids[j]
+                    dummy2 = served_ids[j+1]
+                except IndexError:
+                    continue
+                if dummy[0] == proc_table[i][0]:
+                    if proc_table[served_ids[j][1]][4] - proc_table[served_ids[j + 1][1]][2] > 0:
+                        waiting_time += proc_table[served_ids[j][1]][4] - proc_table[served_ids[j + 1][1]][2]
+                        served_ids.remove(served_ids[j])
+                        served_ids.remove(served_ids[j + 1])
+            if waiting_time > 0:
+                avg_waiting.append(waiting_time)
+                waiting_time = 0
+
+    print "AVG Waiting Time:    " + str(get_avg(avg_waiting))
+    for table in proc_table:
+        if table[0] == -1:
+            t1 = gc.add_task('Bubble', depends_on=t1, duration=table[2], category=late)
+        else:
+            t1 = gc.add_task('P%d' % table[0], depends_on=t1, duration=table[2], category=on_time)
+
+    image = gc.get_image('out.png')
+    return get_avg(avg_waiting)
+
